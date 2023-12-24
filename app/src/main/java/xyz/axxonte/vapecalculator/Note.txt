@@ -1,0 +1,17 @@
+X = Taux de nicotine mg/ml
+Y = Quantité voulue ml
+
+Total nicotine = taux nicotine * quantité voulue
+	mg	   mg/ml  *  ml
+
+FINAL : quantité nicotine = total nicotine /  taux nicotine par flacon
+	ml		mg		mg/ml
+
+
+quantité nicotine = taux de nicotine voulue * quantité voulue / 20
+
+3 * 100 / 20 = 15 mL : OK
+
+6 * 668 / 20 = 200.4 mL : OK
+
+Base = quantité voulue - quantité nicotine

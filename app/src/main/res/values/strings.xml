@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">VapeCalculator</string>
+    <string name="quantity_text">Quantité voulue</string>
+    <string name="nicotine_text">Nicotine voulue</string>
+</resources>
