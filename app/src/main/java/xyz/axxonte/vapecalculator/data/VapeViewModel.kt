@@ -34,6 +34,7 @@ class VapeViewModel : ViewModel() {
                 totalNicotine = uiState.value.totalNicotine
             )
         }
+        calculateTotalNicotineAndBase()
     }
 
     fun setNicotine(nicotine: Float) {
@@ -45,6 +46,7 @@ class VapeViewModel : ViewModel() {
                 totalNicotine = uiState.value.totalNicotine
             )
         }
+        calculateTotalNicotineAndBase()
     }
 
 }

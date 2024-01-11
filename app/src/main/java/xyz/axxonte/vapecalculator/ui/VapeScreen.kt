@@ -9,12 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -22,12 +19,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -37,25 +36,66 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import xyz.axxonte.vapecalculator.R
+import xyz.axxonte.vapecalculator.data.VapeViewModel
 import xyz.axxonte.vapecalculator.ui.theme.VapeCalculatorTheme
 
 @Composable
-fun VapeScreen() {
+fun VapeScreen(
+    viewModel: VapeViewModel
+) {
+    val uiState = viewModel.uiState.collectAsState()
     Scaffold(
         topBar = { AppTopBar() }
     ) { padding ->
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues = padding)
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            QuantityCard()
-            NicotineCard()
+        Column (
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.padding(padding)
+        ){
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                val setQuantity = { float: Float ->
+                    viewModel.setQuantity(float)
+                }
+                val setNicotine = { float: Float ->
+                    viewModel.setNicotine(float)
+                }
+                QuantityCard(updateQuantity = setQuantity)
+                NicotineCard(updateNicotine = setNicotine)
+
+            }
+
+            Divider(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                thickness = 1.dp,
+                color = Color.Black
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                ResultCard(
+                    label = "Base à ajouter",
+                    unit = "ml",
+                    value = uiState.value.totalBase.toString()
+                )
+
+                ResultCard(
+                    label = "Nicotine à ajouter",
+                    unit = "ml",
+                    value = uiState.value.totalNicotine.toString())
+
+            }
         }
     }
 
@@ -64,7 +104,7 @@ fun VapeScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTopBar(modifier: Modifier = Modifier){
+fun AppTopBar(modifier: Modifier = Modifier) {
     TopAppBar(
         title = { Text(text = "Calculateur de base") },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
@@ -77,10 +117,11 @@ fun AppTopBar(modifier: Modifier = Modifier){
 @Composable
 fun QuantityCard(
     modifier: Modifier = Modifier,
+    updateQuantity: (Float) -> Unit
 ) {
     var quantity by remember { mutableStateOf(100f.toString()) }
     Card {
-        Column (
+        Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -94,7 +135,12 @@ fun QuantityCard(
                         .height(64.dp)
                         .width(128.dp),
                     value = quantity,
-                    onValueChange = { quantity = it },
+                    onValueChange = {
+                        quantity = it
+                        if (quantity != "") {
+                            updateQuantity(quantity.toFloat())
+                        }
+                    },
                     textStyle = TextStyle.Default.copy(
                         textAlign = TextAlign.Center,
                         fontSize = TextUnit(25f, TextUnitType.Sp)
@@ -109,7 +155,7 @@ fun QuantityCard(
                         }
                     )
                 )
-                Text(text = "mL")
+                Text(text = "ml")
             }
         }
     }
@@ -118,10 +164,11 @@ fun QuantityCard(
 @Composable
 fun NicotineCard(
     modifier: Modifier = Modifier,
+    updateNicotine: (Float) -> Unit
 ) {
-    var quantity by remember { mutableStateOf(3f.toString()) }
+    var nicotine by remember { mutableStateOf(3f.toString()) }
     Card {
-        Column (
+        Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -134,8 +181,13 @@ fun NicotineCard(
                         .padding(8.dp)
                         .height(64.dp)
                         .width(128.dp),
-                    value = quantity,
-                    onValueChange = { quantity = it },
+                    value = nicotine,
+                    onValueChange = {
+                        nicotine = it
+                        if (nicotine != "") {
+                            updateNicotine(nicotine.toFloat())
+                        }
+                    },
                     textStyle = TextStyle.Default.copy(
                         textAlign = TextAlign.Center,
                         fontSize = TextUnit(25f, TextUnitType.Sp)
@@ -150,7 +202,46 @@ fun NicotineCard(
                         }
                     )
                 )
-                Text(text = "ᵐᵍ⁄ₘₗ") // mg/ml in Unicode
+                Text(text =  "ᵐᵍ⁄ₘₗ") // mg/ml in Unicode
+            }
+        }
+    }
+}
+
+@Composable
+fun ResultCard(modifier: Modifier = Modifier, label: String, unit: String, value: String) {
+    Card {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = label)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    modifier = modifier
+                        .padding(8.dp)
+                        .height(64.dp)
+                        .width(128.dp),
+                    value = value,
+                    onValueChange = { },
+                    textStyle = TextStyle.Default.copy(
+                        textAlign = TextAlign.Center,
+                        fontSize = TextUnit(25f, TextUnitType.Sp)
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+
+                        }
+                    ),
+                    readOnly = true
+                )
+                Text(text = unit) // mg/ml in Unicode
             }
         }
     }
@@ -158,8 +249,8 @@ fun NicotineCard(
 
 @Preview
 @Composable
-fun VapeScreenPreview(){
+fun VapeScreenPreview() {
     VapeCalculatorTheme {
-        VapeScreen()
+        VapeScreen(VapeViewModel())
     }
 }
